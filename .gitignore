@@ -16,3 +16,5 @@ upload.py
 .*
 !.gitignore
 !.hgignore
+
+libadblockplus-binaries
