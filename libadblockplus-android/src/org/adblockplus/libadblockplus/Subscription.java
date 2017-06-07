@@ -30,6 +30,16 @@ public final class Subscription extends JsValue
     super(ptr);
   }
 
+  public boolean isDisabled()
+  {
+    return isDisabled(this.ptr);
+  }
+
+  public void setDisabled(boolean disabled)
+  {
+    setDisabled(this.ptr, disabled);
+  }
+
   public boolean isListed()
   {
     return isListed(this.ptr);
@@ -55,6 +65,11 @@ public final class Subscription extends JsValue
     return isUpdating(this.ptr);
   }
 
+  public boolean isAcceptableAds()
+  {
+    return isAcceptableAds(this.ptr);
+  }
+
   @Override
   public int hashCode()
   {
@@ -74,6 +89,10 @@ public final class Subscription extends JsValue
 
   private final static native void registerNatives();
 
+  private final static native boolean isDisabled(long ptr);
+
+  private final static native void setDisabled(long ptr, boolean disabled);
+
   private final static native boolean isListed(long ptr);
 
   private final static native void addToList(long ptr);
@@ -85,4 +104,6 @@ public final class Subscription extends JsValue
   private final static native boolean isUpdating(long ptr);
 
   private final static native boolean operatorEquals(long ptr, long other);
+
+  private final static native boolean isAcceptableAds(long ptr);
 }

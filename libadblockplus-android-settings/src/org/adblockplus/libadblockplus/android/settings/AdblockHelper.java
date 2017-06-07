@@ -19,6 +19,7 @@ package org.adblockplus.libadblockplus.android.settings;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
 import android.util.Log;
 
 import org.adblockplus.libadblockplus.IsAllowedConnectionCallback;
@@ -55,8 +56,6 @@ public class AdblockHelper
   private String settingsPreferenceName;
   private String preloadedPreferenceName;
   private Map<String, Integer> urlToResourceIdMap;
-  private String application;
-  private String applicationVersion;
   private AdblockEngine engine;
   private AdblockSettingsStorage storage;
   private CountDownLatch engineCreated;
@@ -111,19 +110,14 @@ public class AdblockHelper
    *                 recommended because it can be cleared by the system.
    * @param developmentBuild debug or release?
    * @param preferenceName Shared Preferences name to store adblock settings
-   * @param application Technical name of the platform the app is running on (not user visible).
-   * @param applicationVersion Current version of the platform the app is running on.
    */
   public AdblockHelper init(Context context, String basePath,
-                            boolean developmentBuild, String preferenceName,
-                            String application, String applicationVersion)
+                            boolean developmentBuild, String preferenceName)
   {
     this.context = context.getApplicationContext();
     this.basePath = basePath;
     this.developmentBuild = developmentBuild;
     this.settingsPreferenceName = preferenceName;
-    this.application = application;
-    this.applicationVersion = applicationVersion;
     return this;
   }
 
@@ -141,7 +135,9 @@ public class AdblockHelper
 
   private void createAdblock()
   {
-    this.isAllowedConnectionCallback = new IsAllowedConnectionCallbackImpl(context);
+    ConnectivityManager connectivityManager =
+      (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+    this.isAllowedConnectionCallback = new IsAllowedConnectionCallbackImpl(connectivityManager);
 
     Log.d(TAG, "Creating adblock engine ...");
 
@@ -153,7 +149,7 @@ public class AdblockHelper
 
     AdblockEngine.Builder builder = AdblockEngine
       .builder(
-        AdblockEngine.generateAppInfo(context, developmentBuild, application, applicationVersion),
+        AdblockEngine.generateAppInfo(context, developmentBuild),
         basePath)
       .setIsAllowedConnectionCallback(isAllowedConnectionCallback)
       .enableElementHiding(true);
