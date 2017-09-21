@@ -17,31 +17,53 @@
 
 package org.adblockplus.libadblockplus.tests;
 
-import org.adblockplus.libadblockplus.AppInfo;
-import org.adblockplus.libadblockplus.FilterEngine;
-import org.adblockplus.libadblockplus.JsEngine;
-import org.adblockplus.libadblockplus.MockWebRequest;
 import org.adblockplus.libadblockplus.Platform;
+
+import org.adblockplus.libadblockplus.LogSystem;
+import org.adblockplus.libadblockplus.ThrowingWebRequest;
 import org.adblockplus.libadblockplus.WebRequest;
 
-import android.test.AndroidTestCase;
+import android.content.Context;
+import android.test.InstrumentationTestCase;
 
-public class UpdaterTest extends BaseFilterEngineTest
+public abstract class BasePlatformTest extends InstrumentationTestCase
 {
-  protected MockWebRequest mockWebRequest;
+  protected Platform platform;
 
   @Override
   protected void setUp() throws Exception
   {
-    AppInfo appInfo = AppInfo
-      .builder()
-      .setName("test")
-      .setVersion("1.0.1")
-      .build();
-    mockWebRequest = new MockWebRequest();
-    platform = new Platform(null, mockWebRequest,
+    super.setUp();
+
+    platform = new Platform(createLogSystem(), createWebRequest(),
         getContext().getFilesDir().getAbsolutePath());
-    platform.setUpJsEngine(appInfo);
-    filterEngine = platform.getFilterEngine();
+  }
+
+  @Override
+  protected void tearDown() throws Exception
+  {
+    if (platform != null)
+    {
+      platform.dispose();
+      platform = null;
+    }
+    super.tearDown();
+  }
+
+  // If the method returns null then a default implementation of the Log System
+  // provided by libadblockplus is used.
+  protected LogSystem createLogSystem()
+  {
+    return null;
+  }
+
+  protected WebRequest createWebRequest()
+  {
+    return new ThrowingWebRequest();
+  }
+
+  protected Context getContext()
+  {
+    return getInstrumentation().getTargetContext();
   }
 }

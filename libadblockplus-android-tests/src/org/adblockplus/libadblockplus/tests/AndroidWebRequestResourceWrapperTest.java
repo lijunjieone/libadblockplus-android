@@ -1,6 +1,6 @@
 /*
  * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-2016 Eyeo GmbH
+ * Copyright (C) 2006-present eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -22,6 +22,7 @@ import android.os.SystemClock;
 import org.adblockplus.libadblockplus.HeaderEntry;
 import org.adblockplus.libadblockplus.ServerResponse;
 import org.adblockplus.libadblockplus.Subscription;
+import org.adblockplus.libadblockplus.WebRequest;
 import org.adblockplus.libadblockplus.android.AndroidWebRequest;
 import org.adblockplus.libadblockplus.android.AndroidWebRequestResourceWrapper;
 import org.adblockplus.libadblockplus.android.Utils;
@@ -36,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class AndroidWebRequestResourceWrapperTest extends FilterEngineGenericTest
+public class AndroidWebRequestResourceWrapperTest extends BaseFilterEngineTest
 {
   private static final int UPDATE_SUBSCRIPTIONS_WAIT_DELAY_MS = 5 * 1000; // 5s
 
@@ -105,8 +106,6 @@ public class AndroidWebRequestResourceWrapperTest extends FilterEngineGenericTes
   @Override
   protected void setUp() throws Exception
   {
-    super.setUp();
-
     request = new TestRequest();
     preloadMap = new HashMap<String, Integer>();
     storage = new TestStorage();
@@ -115,7 +114,13 @@ public class AndroidWebRequestResourceWrapperTest extends FilterEngineGenericTes
     wrapperListener = new TestWrapperListener();
     wrapper.setListener(wrapperListener);
 
-    jsEngine.setWebRequest(wrapper);
+    super.setUp();
+  }
+
+  @Override
+  protected WebRequest createWebRequest()
+  {
+    return wrapper;
   }
 
   private void updateSubscriptions()

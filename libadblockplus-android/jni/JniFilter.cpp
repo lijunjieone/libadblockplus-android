@@ -1,6 +1,6 @@
 /*
  * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-2017 eyeo GmbH
+ * Copyright (C) 2006-present eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -66,6 +66,9 @@ static jobject JNICALL JniGetType(JNIEnv* env, jclass clazz, jlong ptr)
     break;
   case AdblockPlus::Filter::TYPE_ELEMHIDE_EXCEPTION:
     enumName = "ELEMHIDE_EXCEPTION";
+    break;
+  case AdblockPlus::Filter::TYPE_TYPE_ELEMHIDE_EMULATION:
+    enumName = "ELEMHIDE_EMULATION";
     break;
   case AdblockPlus::Filter::TYPE_EXCEPTION:
     enumName = "EXCEPTION";

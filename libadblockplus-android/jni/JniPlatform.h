@@ -15,34 +15,15 @@
  * along with Adblock Plus.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.adblockplus.libadblockplus.android;
+#ifndef JNI_PLATFORM_H
+#define JNI_PLATFORM_H
 
-import org.adblockplus.libadblockplus.LogSystem;
+#include <AdblockPlus/Platform.h>
 
-import android.util.Log;
-
-public class AndroidLogSystem implements LogSystem
+struct JniPlatform
 {
-  private static int abpLogLevelToAndroid(final LogLevel level)
-  {
-    switch (level)
-    {
-      default:
-      case TRACE:
-      case LOG:
-        return Log.VERBOSE;
-      case INFO:
-        return Log.INFO;
-      case WARN:
-        return Log.WARN;
-      case ERROR:
-        return Log.ERROR;
-    }
-  }
+  AdblockPlus::Scheduler scheduler;
+  std::unique_ptr<AdblockPlus::Platform> platform;
+};
 
-  @Override
-  public void logCallback(final LogLevel level, final String message, final String source)
-  {
-    Log.println(abpLogLevelToAndroid(level), source, message);
-  }
-}
+#endif /* JNI_PLATFORM_H */

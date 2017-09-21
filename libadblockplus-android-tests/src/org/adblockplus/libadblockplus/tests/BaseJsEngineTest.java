@@ -1,6 +1,6 @@
 /*
  * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-2017 eyeo GmbH
+ * Copyright (C) 2006-present eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -17,21 +17,23 @@
 
 package org.adblockplus.libadblockplus.tests;
 
-import org.adblockplus.libadblockplus.FilterEngine;
-import org.adblockplus.libadblockplus.LazyWebRequest;
+import org.adblockplus.libadblockplus.AppInfo;
+import org.adblockplus.libadblockplus.JsEngine;
+import org.adblockplus.libadblockplus.LogSystem;
+import org.adblockplus.libadblockplus.ThrowingWebRequest;
+import org.adblockplus.libadblockplus.WebRequest;
 
-public abstract class FilterEngineGenericTest extends BaseJsTest
+import android.content.Context;
+import android.test.InstrumentationTestCase;
+
+public abstract class BaseJsEngineTest extends BasePlatformTest
 {
-  protected FilterEngine filterEngine;
+  protected JsEngine jsEngine;
 
   @Override
   protected void setUp() throws Exception
   {
     super.setUp();
-
-    jsEngine.setWebRequest(new LazyWebRequest());
-    jsEngine.setDefaultLogSystem();
-
-    filterEngine = new FilterEngine(jsEngine);
+    jsEngine = platform.getJsEngine();
   }
 }

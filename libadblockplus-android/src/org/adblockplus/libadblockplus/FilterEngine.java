@@ -1,6 +1,6 @@
 /*
  * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-2017 eyeo GmbH
+ * Copyright (C) 2006-present eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -19,9 +19,8 @@ package org.adblockplus.libadblockplus;
 
 import java.util.List;
 
-public final class FilterEngine implements Disposable
+public final class FilterEngine
 {
-  private final Disposer disposer;
   protected final long ptr;
 
   static
@@ -32,23 +31,14 @@ public final class FilterEngine implements Disposable
 
   public static enum ContentType
   {
-    OTHER, SCRIPT, IMAGE, STYLESHEET, OBJECT, SUBDOCUMENT, DOCUMENT, XMLHTTPREQUEST,
-    OBJECT_SUBREQUEST, FONT, MEDIA
+    OTHER, SCRIPT, IMAGE, STYLESHEET, OBJECT, SUBDOCUMENT, DOCUMENT, WEBSOCKET,
+    WEBRTC, PING, XMLHTTPREQUEST, OBJECT_SUBREQUEST, MEDIA, FONT, GENERICBLOCK,
+    ELEMHIDE, GENERICHIDE
   }
 
-  public FilterEngine(final JsEngine jsEngine, final IsAllowedConnectionCallback isAllowedConnectionCallback)
+  FilterEngine(long jniPlatformPtr)
   {
-    long jisAllowedConnectionCallbackPtr =
-      (isAllowedConnectionCallback != null
-        ? isAllowedConnectionCallback.ptr
-        : 0l);
-    this.ptr = ctor(jsEngine.ptr, jisAllowedConnectionCallbackPtr);
-    this.disposer = new Disposer(this, new DisposeWrapper(this.ptr));
-  }
-
-  public FilterEngine(final JsEngine jsEngine)
-  {
-    this(jsEngine, null);
+    this.ptr = jniPlatformPtr;
   }
 
   public boolean isFirstRun()
@@ -196,31 +186,17 @@ public final class FilterEngine implements Disposable
     return getAcceptableAdsSubscriptionURL(this.ptr);
   }
 
-  @Override
-  public void dispose()
+  /**
+   * Schedules updating of a subscription corresponding to the passed URL.
+   * @param subscriptionUrl may contain query parameters, only the beginning of the string is used
+   *                       to find a corresponding subscription.
+   */
+  public void updateFiltersAsync(String subscriptionUrl)
   {
-    this.disposer.dispose();
-  }
-
-  private final static class DisposeWrapper implements Disposable
-  {
-    private final long ptr;
-
-    public DisposeWrapper(final long ptr)
-    {
-      this.ptr = ptr;
-    }
-
-    @Override
-    public void dispose()
-    {
-      dtor(this.ptr);
-    }
+    updateFiltersAsync(this.ptr, subscriptionUrl);
   }
 
   private final static native void registerNatives();
-
-  private final static native long ctor(long jsEnginePtr, long isAllowedConnectionCallbackPtr);
 
   private final static native boolean isFirstRun(long ptr);
 
@@ -276,5 +252,5 @@ public final class FilterEngine implements Disposable
 
   private final static native String getAcceptableAdsSubscriptionURL(long ptr);
 
-  private final static native void dtor(long ptr);
+  private final static native void updateFiltersAsync(long ptr, String subscriptionUrl);
 }

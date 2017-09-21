@@ -1,6 +1,6 @@
 /*
  * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-2017 eyeo GmbH
+ * Copyright (C) 2006-present eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -22,7 +22,7 @@ import org.adblockplus.libadblockplus.JsEngine;
 
 import org.junit.Test;
 
-public class AppInfoJsObjectTest extends BaseJsTest
+public class AppInfoJsObjectTest extends BasePlatformTest
 {
   @Test
   public void testAllProperties()
@@ -37,7 +37,8 @@ public class AppInfoJsObjectTest extends BaseJsTest
       .setDevelopmentBuild(true)
       .build();
 
-    JsEngine jsEngine = new JsEngine(appInfo);
+    platform.setUpJsEngine(appInfo);
+    JsEngine jsEngine = platform.getJsEngine();
     assertEquals("1", jsEngine.evaluate("_appInfo.version").asString());
     assertEquals("3", jsEngine.evaluate("_appInfo.name").asString());
     assertEquals("4", jsEngine.evaluate("_appInfo.application").asString());
@@ -52,10 +53,10 @@ public class AppInfoJsObjectTest extends BaseJsTest
     AppInfo appInfo = AppInfo
       .builder()
       .build();
-
-    JsEngine jsEngine = new JsEngine(appInfo);
-    assertEquals("0", jsEngine.evaluate("_appInfo.version").asString());
-    assertEquals("adblockplusandroid", jsEngine.evaluate("_appInfo.name").asString());
+    platform.setUpJsEngine(appInfo);
+    JsEngine jsEngine = platform.getJsEngine();
+    assertEquals("1.0", jsEngine.evaluate("_appInfo.version").asString());
+    assertEquals("libadblockplus-android", jsEngine.evaluate("_appInfo.name").asString());
     assertEquals("android", jsEngine.evaluate("_appInfo.application").asString());
     assertEquals("0", jsEngine.evaluate("_appInfo.applicationVersion").asString());
     assertEquals("en_US", jsEngine.evaluate("_appInfo.locale").asString());

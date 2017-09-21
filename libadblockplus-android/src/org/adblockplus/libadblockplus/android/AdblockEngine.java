@@ -1,6 +1,6 @@
 /*
  * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-2017 eyeo GmbH
+ * Copyright (C) 2006-present eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -32,9 +32,9 @@ import org.adblockplus.libadblockplus.FilterChangeCallback;
 import org.adblockplus.libadblockplus.FilterEngine;
 import org.adblockplus.libadblockplus.FilterEngine.ContentType;
 import org.adblockplus.libadblockplus.IsAllowedConnectionCallback;
-import org.adblockplus.libadblockplus.JsEngine;
 import org.adblockplus.libadblockplus.JsValue;
 import org.adblockplus.libadblockplus.LogSystem;
+import org.adblockplus.libadblockplus.Platform;
 import org.adblockplus.libadblockplus.ShowNotificationCallback;
 import org.adblockplus.libadblockplus.Subscription;
 import org.adblockplus.libadblockplus.UpdateAvailableCallback;
@@ -67,7 +67,7 @@ public final class AdblockEngine
    * volatile, this seems to prevent the JNI from 'optimizing away' those objects (as a volatile
    * variable might be changed at any time from any thread).
    */
-  private volatile JsEngine jsEngine;
+  private volatile Platform platform;
   private volatile FilterEngine filterEngine;
   private volatile LogSystem logSystem;
   private volatile WebRequest webRequest;
@@ -202,7 +202,18 @@ public final class AdblockEngine
       {
         AndroidWebRequestResourceWrapper wrapper = new AndroidWebRequestResourceWrapper(
           context, engine.webRequest, urlToResourceIdMap, resourceStorage);
-        wrapper.setListener(engine.resourceWrapperListener);
+        wrapper.setListener(new AndroidWebRequestResourceWrapper.Listener()
+        {
+          @Override
+          public void onIntercepted(String url, int resourceId)
+          {
+            Log.d(TAG, "Force subscription update for intercepted URL " + url);
+            if (engine.filterEngine != null)
+            {
+              engine.filterEngine.updateFiltersAsync(url);
+            }
+          }
+        });
 
         engine.webRequest = wrapper;
       }
@@ -242,15 +253,11 @@ public final class AdblockEngine
 
     private void createEngines()
     {
-      engine.jsEngine = new JsEngine(appInfo);
-      engine.jsEngine.setDefaultFileSystem(basePath);
-
-      engine.jsEngine.setWebRequest(engine.webRequest);
-
       engine.logSystem = new AndroidLogSystem();
-      engine.jsEngine.setLogSystem(engine.logSystem);
-
-      engine.filterEngine = new FilterEngine(engine.jsEngine, isAllowedConnectionCallback);
+      engine.platform = new Platform(engine.logSystem, engine.webRequest, basePath);
+      engine.platform.setUpJsEngine(appInfo);
+      engine.platform.setUpFilterEngine(isAllowedConnectionCallback);
+      engine.filterEngine = engine.platform.getFilterEngine();
     }
   }
 
@@ -258,40 +265,6 @@ public final class AdblockEngine
   {
     return new Builder(appInfo, basePath);
   }
-
-  private final AndroidWebRequestResourceWrapper.Listener resourceWrapperListener =
-    new AndroidWebRequestResourceWrapper.Listener()
-  {
-    private static final int UPDATE_DELAY_MS = 1 * 1000;
-
-    private final Handler handler = new Handler(Looper.getMainLooper());
-
-    private final Runnable forceUpdateRunnable = new Runnable()
-    {
-      public void run() {
-        // Filter Engine can be already disposed
-        if (filterEngine != null)
-        {
-          Log.d(TAG, "Force update subscriptions");
-          AdblockEngine.this.updateSubscriptions();
-        }
-      }
-    };
-
-    @Override
-    public void onIntercepted(String url, int resourceId)
-    {
-      // we need to force update subscriptions ASAP after preloaded one is returned
-      // but we should note that multiple interceptions (for main easylist and AA) and force update once only
-
-      // adding into main thread queue to avoid concurrency issues (start update while updating)
-      // as usually onIntercepted() is invoked in background thread
-      handler.removeCallbacks(forceUpdateRunnable);
-      handler.postDelayed(forceUpdateRunnable, UPDATE_DELAY_MS);
-
-      Log.d(TAG, "Scheduled force update in " + UPDATE_DELAY_MS);
-    }
-  };
 
   public void dispose()
   {
@@ -315,14 +288,8 @@ public final class AdblockEngine
         this.filterEngine.removeShowNotificationCallback();
       }
 
-      this.filterEngine.dispose();
-      this.filterEngine = null;
-    }
-
-    if (this.jsEngine != null)
-    {
-      this.jsEngine.dispose();
-      this.jsEngine = null;
+      this.platform.dispose();
+      this.platform = null;
     }
 
     // callbacks then
@@ -342,18 +309,6 @@ public final class AdblockEngine
     {
       this.showNotificationCallback.dispose();
       this.showNotificationCallback = null;
-    }
-
-    if (this.logSystem != null)
-    {
-      this.logSystem.dispose();
-      this.logSystem = null;
-    }
-
-    if (this.webRequest != null)
-    {
-      this.webRequest.dispose();
-      this.webRequest = null;
     }
   }
 
@@ -491,21 +446,6 @@ public final class AdblockEngine
         {
           sub.dispose();
         }
-      }
-    }
-  }
-
-  public void updateSubscriptions()
-  {
-    for (final Subscription s : this.filterEngine.getListedSubscriptions())
-    {
-      try
-      {
-        s.updateFilters();
-      }
-      finally
-      {
-        s.dispose();
       }
     }
   }

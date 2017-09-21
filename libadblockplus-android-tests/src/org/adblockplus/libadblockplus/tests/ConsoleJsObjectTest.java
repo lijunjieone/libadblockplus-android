@@ -1,6 +1,6 @@
 /*
  * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-2017 eyeo GmbH
+ * Copyright (C) 2006-present eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -22,17 +22,14 @@ import org.adblockplus.libadblockplus.MockLogSystem;
 
 import org.junit.Test;
 
-public class ConsoleJsObjectTest extends BaseJsTest
+public class ConsoleJsObjectTest extends BaseJsEngineTest
 {
   protected MockLogSystem mockLogSystem;
 
   @Override
-  protected void setUp() throws Exception
+  protected LogSystem createLogSystem()
   {
-    super.setUp();
-
-    mockLogSystem = new MockLogSystem();
-    jsEngine.setLogSystem(mockLogSystem);
+    return mockLogSystem = new MockLogSystem();
   }
 
   @Test

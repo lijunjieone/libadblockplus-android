@@ -1,6 +1,6 @@
 /*
  * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-2017 eyeo GmbH
+ * Copyright (C) 2006-present eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -27,10 +27,10 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.List;
 
-public class MockWebRequestTest extends BaseJsTest
+public class MockWebRequestTest extends BaseJsEngineTest
 {
 
-  private class LocalMockWebRequest extends WebRequest
+  private class LocalMockWebRequest implements WebRequest
   {
     @Override
     public ServerResponse httpGET(String url, List<HeaderEntry> headers)
@@ -58,11 +58,9 @@ public class MockWebRequestTest extends BaseJsTest
   }
 
   @Override
-  protected void setUp() throws Exception
+  protected WebRequest createWebRequest()
   {
-    super.setUp();
-
-    jsEngine.setWebRequest(new LocalMockWebRequest());
+    return new LocalMockWebRequest();
   }
 
   @Test
@@ -133,8 +131,9 @@ public class MockWebRequestTest extends BaseJsTest
   public void testSuccessfulRequest() throws InterruptedException
   {
     jsEngine.evaluate(
-      "_webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
-    assertTrue(jsEngine.evaluate("this.foo").isUndefined());
+      "let foo = true; _webRequest.GET('http://example.com/', {X: 'Y'}, function(result) {foo = result;} )");
+    assertTrue(jsEngine.evaluate("foo").isBoolean());
+    assertTrue(jsEngine.evaluate("foo").asBoolean());
 
     Thread.sleep(200);
 

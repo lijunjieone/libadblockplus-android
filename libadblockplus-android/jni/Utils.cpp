@@ -1,6 +1,6 @@
 /*
  * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-2017 eyeo GmbH
+ * Copyright (C) 2006-present eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -101,6 +101,11 @@ std::string JniJavaToStdString(JNIEnv* env, jstring str)
 jstring JniStdStringToJava(JNIEnv* env, std::string str)
 {
   return env->NewStringUTF(str.c_str());
+}
+
+bool stringBeginsWith(const std::string& string, const std::string& beginning)
+{
+  return string.compare(0, beginning.length(), beginning);
 }
 
 jobject NewJniArrayList(JNIEnv* env)

@@ -1,6 +1,6 @@
 /*
  * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-2017 eyeo GmbH
+ * Copyright (C) 2006-present eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -59,8 +59,6 @@ public class AdblockHelper
   private AdblockEngine engine;
   private AdblockSettingsStorage storage;
   private CountDownLatch engineCreated;
-
-  private IsAllowedConnectionCallback isAllowedConnectionCallback;
 
   /*
     Simple ARC management for AdblockEngine
@@ -137,7 +135,7 @@ public class AdblockHelper
   {
     ConnectivityManager connectivityManager =
       (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-    this.isAllowedConnectionCallback = new IsAllowedConnectionCallbackImpl(connectivityManager);
+    IsAllowedConnectionCallback isAllowedConnectionCallback = new IsAllowedConnectionCallbackImpl(connectivityManager);
 
     Log.d(TAG, "Creating adblock engine ...");
 
@@ -225,10 +223,6 @@ public class AdblockHelper
     engine = null;
 
     storage = null;
-
-    // callbacks
-    this.isAllowedConnectionCallback.dispose();
-    this.isAllowedConnectionCallback = null;
   }
 
   /**

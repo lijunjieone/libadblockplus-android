@@ -1,6 +1,6 @@
 /*
  * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-2017 eyeo GmbH
+ * Copyright (C) 2006-present eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -21,24 +21,24 @@ import org.adblockplus.libadblockplus.AdblockPlusException;
 
 import org.junit.Test;
 
-public class GlobalJsObjectTest extends BaseJsTest
+public class GlobalJsObjectTest extends BaseJsEngineTest
 {
   @Test
   public void testSetTimeout() throws InterruptedException
   {
-    jsEngine.evaluate("setTimeout(function() {foo = 'bar';}, 100)");
-    assertTrue(jsEngine.evaluate("this.foo").isUndefined());
+    jsEngine.evaluate("let foo; setTimeout(function() {foo = 'bar';}, 100)");
+    assertTrue(jsEngine.evaluate("foo").isUndefined());
     Thread.sleep(200);
-    assertEquals("bar", jsEngine.evaluate("this.foo").asString());
+    assertEquals("bar", jsEngine.evaluate("foo").asString());
   }
 
   @Test
   public void testSetTimeoutWithArgs() throws InterruptedException
   {
-    jsEngine.evaluate("setTimeout(function(s) {foo = s;}, 100, 'foobar')");
-    assertTrue(jsEngine.evaluate("this.foo").isUndefined());
+    jsEngine.evaluate("let foo; setTimeout(function(s) {foo = s;}, 100, 'foobar')");
+    assertTrue(jsEngine.evaluate("foo").isUndefined());
     Thread.sleep(200);
-    assertEquals("foobar", jsEngine.evaluate("this.foo").asString());
+    assertEquals("foobar", jsEngine.evaluate("foo").asString());
   }
 
   @Test
@@ -68,10 +68,10 @@ public class GlobalJsObjectTest extends BaseJsTest
   @Test
   public void testSetMultipleTimeouts() throws InterruptedException
   {
-    jsEngine.evaluate("foo = []");
+    jsEngine.evaluate("let foo = []");
     jsEngine.evaluate("setTimeout(function(s) {foo.push('1');}, 100)");
     jsEngine.evaluate("setTimeout(function(s) {foo.push('2');}, 150)");
     Thread.sleep(200);
-    assertEquals("1,2", jsEngine.evaluate("this.foo").asString());
+    assertEquals("1,2", jsEngine.evaluate("foo").asString());
   }
 }

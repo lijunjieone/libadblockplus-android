@@ -1,6 +1,6 @@
 /*
  * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-2017 eyeo GmbH
+ * Copyright (C) 2006-present eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -22,15 +22,17 @@ import android.os.SystemClock;
 import org.adblockplus.libadblockplus.FilterEngine;
 import org.adblockplus.libadblockplus.HeaderEntry;
 import org.adblockplus.libadblockplus.IsAllowedConnectionCallback;
+import org.adblockplus.libadblockplus.Platform;
 import org.adblockplus.libadblockplus.ServerResponse;
 import org.adblockplus.libadblockplus.Subscription;
+import org.adblockplus.libadblockplus.WebRequest;
 import org.adblockplus.libadblockplus.android.AndroidWebRequest;
 import org.junit.Test;
 
 import java.util.LinkedList;
 import java.util.List;
 
-public class IsAllowedConnectionCallbackTest extends BaseJsTest
+public class IsAllowedConnectionCallbackTest extends BaseFilterEngineTest
 {
   private static final int UPDATE_SUBSCRIPTIONS_WAIT_DELAY_MS = 5 * 1000; // 5s
 
@@ -51,7 +53,7 @@ public class IsAllowedConnectionCallbackTest extends BaseJsTest
     }
   }
 
-  private static final class TestCallback extends IsAllowedConnectionCallback
+  private static final class TestCallback implements IsAllowedConnectionCallback
   {
     private boolean result;
     private boolean invoked;
@@ -89,18 +91,21 @@ public class IsAllowedConnectionCallbackTest extends BaseJsTest
 
   private TestRequest request;
   private TestCallback callback;
-  private FilterEngine filterEngine;
 
   @Override
   protected void setUp() throws Exception
   {
-    super.setUp();
-
-    request = new TestRequest();
-    jsEngine.setWebRequest(request);
+    platform = new Platform(createLogSystem(), createWebRequest(),
+        getContext().getFilesDir().getAbsolutePath());
     callback = new TestCallback();
+    platform.setUpFilterEngine(callback);
+    filterEngine = platform.getFilterEngine();
+  }
 
-    filterEngine = new FilterEngine(jsEngine, callback);
+  @Override
+  protected WebRequest createWebRequest()
+  {
+    return request = new TestRequest();
   }
 
   private void updateSubscriptions()

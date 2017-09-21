@@ -1,6 +1,6 @@
 /*
  * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-2017 eyeo GmbH
+ * Copyright (C) 2006-present eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -17,6 +17,8 @@
 
 package org.adblockplus.libadblockplus.tests;
 
+import org.adblockplus.libadblockplus.JsEngine;
+import org.adblockplus.libadblockplus.WebRequest;
 import org.adblockplus.libadblockplus.android.AndroidWebRequest;
 import org.adblockplus.libadblockplus.FilterEngine;
 import org.adblockplus.libadblockplus.JsValue;
@@ -27,23 +29,26 @@ import org.junit.Test;
 import java.net.MalformedURLException;
 import java.util.List;
 
-public class AndroidWebRequestTest extends BaseJsTest
+// It inherits the fixture instantiating FilterEngine which is not explicitly
+// used in the test bodies in order to provide with JS XMLHttpRequest class
+// which is defined in compat.js, but the latter is properly loaded by
+// FilterEngine.
+public class AndroidWebRequestTest extends BaseFilterEngineTest
 {
   @Override
-  protected void setUp() throws Exception
+  protected WebRequest createWebRequest()
   {
-    super.setUp();
-
-    jsEngine.setWebRequest(new AndroidWebRequest(true, true));
+    return new AndroidWebRequest(true, true);
   }
 
   @Test
   public void testRealWebRequest()
   {
+    JsEngine jsEngine = platform.getJsEngine();
     // This URL should redirect to easylist-downloads.adblockplus.org and we
     // should get the actual filter list back.
     jsEngine.evaluate(
-      "_webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, " +
+      "let foo; _webRequest.GET('https://easylist-downloads.adblockplus.org/easylist.txt', {}, " +
       "function(result) {foo = result;} )");
     do
     {
@@ -55,7 +60,7 @@ public class AndroidWebRequestTest extends BaseJsTest
       {
         throw new RuntimeException(e);
       }
-    } while (jsEngine.evaluate("this.foo").isUndefined());
+    } while (jsEngine.evaluate("foo").isUndefined());
 
     String response = jsEngine.evaluate("foo.responseText").asString();
     assertNotNull(response);
@@ -80,10 +85,7 @@ public class AndroidWebRequestTest extends BaseJsTest
   @Test
   public void testXMLHttpRequest()
   {
-    // creating not used anywhere FilterEngine object is not as useless as it seems:
-    // it loads compat.js JsEngine to add XMLHttpRequest class support
-    new FilterEngine(jsEngine);
-
+    JsEngine jsEngine = platform.getJsEngine();
     jsEngine.evaluate(
       "var result;\n" +
       "var request = new XMLHttpRequest();\n" +
@@ -122,8 +124,6 @@ public class AndroidWebRequestTest extends BaseJsTest
   @Test
   public void testGetElemhideElements() throws MalformedURLException, InterruptedException
   {
-    FilterEngine filterEngine = new FilterEngine(jsEngine);
-
     Thread.sleep(20 * 1000); // wait for the subscription to be downloaded
 
     final String url = "www.mobile01.com/somepage.html";

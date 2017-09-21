@@ -1,6 +1,6 @@
 /*
  * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-2017 eyeo GmbH
+ * Copyright (C) 2006-present eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -17,29 +17,24 @@
 
 package org.adblockplus.libadblockplus.tests;
 
-import org.adblockplus.libadblockplus.FilterEngine;
 import org.adblockplus.libadblockplus.LazyWebRequest;
 import org.adblockplus.libadblockplus.Notification;
 import org.adblockplus.libadblockplus.ShowNotificationCallback;
+import org.adblockplus.libadblockplus.WebRequest;
 
 import org.junit.Test;
 
-public class NotificationTest extends BaseJsTest
+public class NotificationTest extends BaseFilterEngineTest
 {
-  protected FilterEngine filterEngine;
-
   @Override
-  protected void setUp() throws Exception
+  protected WebRequest createWebRequest()
   {
-    super.setUp();
-
-    jsEngine.setWebRequest(new LazyWebRequest());
-    filterEngine = new FilterEngine(jsEngine);
+    return new LazyWebRequest();
   }
 
   protected void addNotification(String notification)
   {
-    jsEngine.evaluate(
+    platform.getJsEngine().evaluate(
       "(function()\n" +
       "{\n" +
       "require('notification').Notification.addNotification(" + notification + ");\n" +

@@ -1,6 +1,6 @@
 /*
  * This file is part of Adblock Plus <https://adblockplus.org/>,
- * Copyright (C) 2006-2017 eyeo GmbH
+ * Copyright (C) 2006-present eyeo GmbH
  *
  * Adblock Plus is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -17,31 +17,40 @@
 
 package org.adblockplus.libadblockplus.tests;
 
-import org.adblockplus.libadblockplus.AppInfo;
-import org.adblockplus.libadblockplus.JsEngine;
-import org.adblockplus.libadblockplus.LazyLogSystem;
-import org.adblockplus.libadblockplus.ThrowingWebRequest;
+import org.adblockplus.libadblockplus.FilterEngine;
+import org.adblockplus.libadblockplus.LazyWebRequest;
+import org.adblockplus.libadblockplus.WebRequest;
 
-import android.content.Context;
-import android.test.InstrumentationTestCase;
-
-public abstract class BaseJsTest extends InstrumentationTestCase
+public abstract class BaseFilterEngineTest extends BasePlatformTest
 {
-  protected JsEngine jsEngine;
+  protected FilterEngine filterEngine;
 
   @Override
   protected void setUp() throws Exception
   {
     super.setUp();
-
-    jsEngine = new JsEngine(AppInfo.builder().build());
-    jsEngine.setDefaultLogSystem();
-    jsEngine.setDefaultFileSystem(getContext().getFilesDir().getAbsolutePath());
-    jsEngine.setWebRequest(new ThrowingWebRequest());
+    filterEngine = platform.getFilterEngine();
   }
 
-  protected Context getContext()
+  @Override
+  protected void tearDown() throws Exception
   {
-    return getInstrumentation().getTargetContext();
+    disposeFilterEngine();
+    super.tearDown();
+  }
+
+  protected void disposeFilterEngine() throws InterruptedException
+  {
+    if (filterEngine != null)
+    {
+      Thread.sleep(200); // let FS finish its operations
+      filterEngine = null;
+    }
+  }
+
+  @Override
+  protected WebRequest createWebRequest()
+  {
+    return new LazyWebRequest();
   }
 }
