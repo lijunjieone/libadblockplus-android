@@ -20,7 +20,6 @@
 #include "JniCallbacks.h"
 #include "JniPlatform.h"
 
-
 static void TransformAppInfo(JNIEnv* env, jobject jAppInfo, AdblockPlus::AppInfo& appInfo)
 {
   jclass clazz = env->GetObjectClass(jAppInfo);
@@ -70,13 +69,20 @@ static void JNICALL JniDtor(JNIEnv* env, jclass clazz, jlong ptr)
   delete JniLongToTypePtr<JniPlatform>(ptr);
 }
 
-static void JNICALL JniSetUpJsEngine(JNIEnv* env, jclass clazz, jlong ptr, jobject jAppInfo)
+static void JNICALL JniSetUpJsEngine(JNIEnv* env, jclass clazz,
+                                     jlong ptr, jobject jAppInfo, jlong v8IsolateProviderPtr)
 {
   try
   {
     AdblockPlus::AppInfo appInfo;
     TransformAppInfo(env, jAppInfo, appInfo);
-    GetPlatformRef(ptr).SetUpJsEngine(appInfo);
+    std::unique_ptr<AdblockPlus::IV8IsolateProvider> isolateProvider;
+    if (v8IsolateProviderPtr)
+    {
+      isolateProvider.reset(JniLongToTypePtr<AdblockPlus::IV8IsolateProvider>(v8IsolateProviderPtr));
+    }
+
+    GetPlatformRef(ptr).SetUpJsEngine(appInfo, std::move(isolateProvider));
   }
   CATCH_AND_THROW(env)
 }
@@ -132,7 +138,7 @@ static JNINativeMethod methods[] =
   { (char*)"ctor", (char*)"(" TYP("LogSystem") TYP("WebRequest") "Ljava/lang/String;)J", (void*)JniCtor },
   { (char*)"dtor", (char*)"(J)V", (void*)JniDtor },
 
-  { (char*)"setUpJsEngine", (char*)"(J" TYP("AppInfo") ")V", (void*)JniSetUpJsEngine },
+  { (char*)"setUpJsEngine", (char*)"(J" TYP("AppInfo") "J)V", (void*)JniSetUpJsEngine },
   { (char*)"getJsEnginePtr", (char*)"(J)J", (void*)JniGetJsEnginePtr },
   { (char*)"setUpFilterEngine", (char*)"(J" TYP("IsAllowedConnectionCallback") ")V", (void*)JniSetUpFilterEngine },
   { (char*)"ensureFilterEngine", (char*)"(J)V", (void*)JniEnsureFilterEngine }

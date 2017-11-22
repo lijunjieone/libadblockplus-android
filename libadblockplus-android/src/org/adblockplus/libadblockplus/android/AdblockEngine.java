@@ -45,8 +45,6 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build.VERSION;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 public final class AdblockEngine
@@ -133,6 +131,7 @@ public final class AdblockEngine
     private AppInfo appInfo;
     private String basePath;
     private IsAllowedConnectionCallback isAllowedConnectionCallback;
+    private Long v8IsolateProviderPtr;
 
     private AdblockEngine engine;
 
@@ -166,6 +165,12 @@ public final class AdblockEngine
     public Builder setIsAllowedConnectionCallback(IsAllowedConnectionCallback callback)
     {
       this.isAllowedConnectionCallback = callback;
+      return this;
+    }
+
+    public Builder useV8IsolateProvider(long v8IsolateProviderPtr)
+    {
+      this.v8IsolateProviderPtr = v8IsolateProviderPtr;
       return this;
     }
 
@@ -246,7 +251,10 @@ public final class AdblockEngine
 
       initCallbacks();
 
-      androidWebRequest.updateSubscriptionURLs(engine.filterEngine);
+      if (!engine.elemhideEnabled)
+      {
+        androidWebRequest.updateSubscriptionURLs(engine.filterEngine);
+      }
 
       return engine;
     }
@@ -255,7 +263,14 @@ public final class AdblockEngine
     {
       engine.logSystem = new AndroidLogSystem();
       engine.platform = new Platform(engine.logSystem, engine.webRequest, basePath);
-      engine.platform.setUpJsEngine(appInfo);
+      if (v8IsolateProviderPtr != null)
+      {
+        engine.platform.setUpJsEngine(appInfo, v8IsolateProviderPtr);
+      }
+      else
+      {
+        engine.platform.setUpJsEngine(appInfo);
+      }
       engine.platform.setUpFilterEngine(isAllowedConnectionCallback);
       engine.filterEngine = engine.platform.getFilterEngine();
     }
@@ -345,6 +360,16 @@ public final class AdblockEngine
     finally
     {
       jsUrl.dispose();
+    }
+
+    JsValue jsSpecialization = jsSubscription.getProperty("specialization");
+    try
+    {
+      subscription.specialization = jsSpecialization.toString();
+    }
+    finally
+    {
+      jsSpecialization.dispose();
     }
 
     return subscription;

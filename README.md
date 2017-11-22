@@ -63,9 +63,9 @@ and *.apk in the 'libadblockplus-android-webviewapp/target' directory.
 
 #### Requirements
 
-* [The Android SDK](http://developer.android.com/sdk)
+* [The Android SDK](https://developer.android.com/sdk)
 * Android SDK Build tools 24.0.1
-* [The Android NDK, 12b](https://developer.android.com/tools/sdk/ndk)
+* [The Android NDK, 12b](https://developer.android.com/ndk)
 
 Edit 'buildToolsVersion' in 'build.gradle' files if necessary.
 
@@ -90,6 +90,32 @@ An app that uses the library have to add the following permissions to `AndroidMa
  * `<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>`
 
 (added automatically if building with Gradle or should be added manually otherwise).
+
+### Building with prebuilt shared V8
+
+This can be desired to use product's V8 (let's say Chromium) instead of built-in V8.
+Put prebuilt shared V8 library file(s) in ARCH directories and set `SHARED_V8_LIB_FILENAMES`
+environment variable before building. You can pass multiple filenames, separated with space.
+Libadblockplus is required to be linked with that library file(s).
+
+For example (build with Gradle):
+
+    SHARED_V8_LIB_FILENAMES=libv8.cr.so ./gradlew clean assemble
+    
+or
+
+    SHARED_V8_LIB_FILENAMES="libv8.cr.so libfoo.so" ./gradlew clean assemble
+    
+for multiple library files.
+
+Note
+  
+    [Configuration] Excluding shared v8 library libv8.cr.so from AAR
+    ...
+    [Configuration] Linking dynamically with shared v8 library ./libadblockplus-binaries/android_armeabi-v7a/libv8.cr.so
+    ...
+
+output while building. 
 
 ## Library tests
 

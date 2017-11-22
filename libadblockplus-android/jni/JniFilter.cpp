@@ -17,7 +17,6 @@
 
 #include <AdblockPlus.h>
 #include "Utils.h"
-#include "JniJsValue.h"
 #include "JniFilter.h"
 
 // precached in JNI_OnLoad and released in JNI_OnUnload
@@ -67,7 +66,7 @@ static jobject JNICALL JniGetType(JNIEnv* env, jclass clazz, jlong ptr)
   case AdblockPlus::Filter::TYPE_ELEMHIDE_EXCEPTION:
     enumName = "ELEMHIDE_EXCEPTION";
     break;
-  case AdblockPlus::Filter::TYPE_TYPE_ELEMHIDE_EMULATION:
+  case AdblockPlus::Filter::TYPE_ELEMHIDE_EMULATION:
     enumName = "ELEMHIDE_EMULATION";
     break;
   case AdblockPlus::Filter::TYPE_EXCEPTION:
