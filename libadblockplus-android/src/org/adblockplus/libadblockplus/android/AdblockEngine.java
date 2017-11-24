@@ -515,12 +515,14 @@ public final class AdblockEngine
 
   public boolean matches(final String fullUrl, final ContentType contentType, final String[] referrerChainArray)
   {
+    Log.e(TAG,"enable="+enabled+",url="+fullUrl);
     if (!enabled)
     {
       return false;
     }
 
     final Filter filter = this.filterEngine.matches(fullUrl, contentType, referrerChainArray);
+    Log.e(TAG,"filter.isNull="+(filter==null));
 
     if (filter == null)
     {

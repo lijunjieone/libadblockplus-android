@@ -28,6 +28,9 @@ android {
     }
 }
 
+rootProject.ext.uploadPackageName="org.adblockplus.libadblockplus.settings"
+rootProject.ext.libraryVersion="1.0.0"
+apply from: rootProject.getRootDir().getAbsolutePath() + "/upload.gradle"
 
 
 dependencies {

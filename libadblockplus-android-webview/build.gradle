@@ -28,6 +28,12 @@ android {
   }
 }
 
+
+rootProject.ext.uploadPackageName="org.adblockplus.libadblockplus.webview"
+rootProject.ext.libraryVersion="1.0.1"
+apply from: rootProject.getRootDir().getAbsolutePath() + "/upload.gradle"
+
+
 dependencies {
     compile project(':libadblockplus-android')
 }

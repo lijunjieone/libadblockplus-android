@@ -644,6 +644,7 @@ public class AdblockWebView extends WebView
       }
 
       startAbpLoading(url);
+      pageStarted(url);
 
       if (extWebViewClient != null)
       {
@@ -897,6 +898,7 @@ public class AdblockWebView extends WebView
       if (adblockEngine.matches(url, contentType, referrerChainArray))
       {
         w("Blocked loading " + url);
+        blockAd(url);
 
         // if we should block, return empty response which results in 'errorLoading' callback
         return new WebResourceResponse("text/plain", "UTF-8", null);
@@ -967,6 +969,14 @@ public class AdblockWebView extends WebView
         this.getContext().getDir(AdblockEngine.BASE_PATH_DIRECTORY, Context.MODE_PRIVATE).getAbsolutePath())
       .enableElementHiding(true)
       .build();
+  }
+
+  protected void pageStarted(String url) {
+
+  }
+
+  protected void blockAd(String url) {
+
   }
 
   private class ElemHideThread extends Thread
